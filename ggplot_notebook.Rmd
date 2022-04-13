@@ -1,0 +1,86 @@
+---
+title: "GGPLOT2"
+author: "Salman Virani"
+output:
+  html_document:
+    df_print: paged
+---
+
+Hello Everyone! Lets experiment a bit with ggplot functionalities using 'flights' dataset. First we will load all the necessary packages and explore what the flights data presents us with.
+
+```{r}
+library(ggplot2)
+library(nycflights13)
+library(dplyr)
+library(scales)
+```
+
+We can explore the flights dataset by typing '?flights'. Flights dataset is the on-time data for all flights that departed NYC through three airports; JFK, LGA, or EWR. Our dataset has 336776 observations of 19 varaibles. 
+
+```{r}
+?flights
+```
+
+To gain more knowledge on the use of ggplot2 package, we can use the same question before the package name. Moreover, to learn its functionality, we search for Vignnettes of the package by 'BrowseVignettes' function.
+
+```{r}
+?ggplot2
+browseVignettes("ggplot2")
+```
+
+## Exploratory Data Analysis
+
+Before doing anything, we need to load the datasets. We will load the 'flights' dataset, 'airlines' dataset, and 'airports' dataset. We will use 'flights' dataset for our analysis. 'Airlines' dataset gives us the complete names of the carriers which we will see in our analysis. 'Airports' dataset gives us the details of specific airports. Airports that are of interest for this study is EWR(Newark Liberty Intl), JFK(John F Kennedy Intl) and LGA(La Guardia) all of which are base in NewYork. All of these datasets lie in the 'nycflights13' package.
+
+```{r}
+data("flights")
+data("airlines")
+data("airports")
+```
+
+### Total Distance Covered by Each Carrier
+
+```{r}
+ggplot(flights, aes(x = carrier, y = distance, fill = origin)) +
+  geom_col(position = "stack") +
+  labs(title = "Total Distance Covered by Each Carrier",
+       subtitle = "NYC Flights 2013",
+       caption = "- Salman Virani",
+       x = "Carrier", 
+       y = "Total Distance in 2013") +
+  scale_y_continuous(labels = comma) +
+  coord_flip()
+```
+
+### Total Net Delays (Departure Delays + Arrival Delays) by Month
+
+```{r}
+flights %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay)) %>%
+  group_by(month) %>%
+  summarise(total_delay = sum(dep_delay + arr_delay)) %>%
+  ggplot(aes(x = as.factor(month), y = total_delay)) +
+  geom_point(color = "red", shape = 15) +
+  labs(title = "Total Net Delays (Departure Delays + Arrival Delays) by Month",
+      subtitle = "NYC Flights 2013",
+      caption = "- Salman Virani",
+      x = "Month", 
+      y = "Total Net Delays in 2013") +
+  scale_y_continuous(labels = comma)
+```
+
+### Relationship between Distance and Delays
+
+```{r}
+flights <- flights %>%
+  mutate(total_delay = dep_delay + arr_delay)
+
+ggplot(flights, aes(x = total_delay, y = distance)) +
+  geom_point(color = "blue") +
+  facet_grid(origin~.) +
+  labs(title = "Distance VS Delay",
+       subtitle = "NYC Flights 2013",
+       caption = "- Salman Virani",
+       x = "Total Delay(Arrival + Departure)",
+       y = "Distance")
+```
